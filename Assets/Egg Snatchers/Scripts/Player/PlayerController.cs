@@ -22,8 +22,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpSpeed;
     [SerializeField] private float ySpeed;
+    [SerializeField] private float xSpeed;
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private BoxCollider groundDetector;
+
+    public float XSpeed { get => xSpeed; set => xSpeed = value; }
+
+    [Header("Actions")]
+    public Action onJumpStarted;
+    public Action onFallStarted;
+    public Action onLandStarted;
 
     private void Start()
     {
@@ -56,34 +64,36 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void StartFalling()
-    {
-        playerState = PlayerState.Air;
-    }
-    private void Land()
-    {
-        playerState = PlayerState.Grounded;
-        ySpeed = 0;
-    }
     private void MoveVerticalAir()
     {
         float targetY = transform.position.y + ySpeed * Time.deltaTime;
         Vector3 targetPosition = transform.position.With(y: targetY);
 
         //we are falling
-        if(!playerDetection.CanGoThere(targetPosition))
+        if(!playerDetection.CanGoThere(targetPosition,out Collider firstCollider))
         {
-            Physics.Raycast(groundDetector.transform.position, Vector3.down, out RaycastHit hit, groundMask);
+            float minY = firstCollider.ClosestPoint(transform.position).y;
+            Physics.Raycast(groundDetector.transform.position, Vector3.down, out RaycastHit hit,1, groundMask);
             if(hit.collider != null)
             {
-                targetPosition.y = hit.point.y;
+                targetPosition.y = minY;
             }
-            transform.position = targetPosition;    
-            Land();
-            return;
+            else
+            {
+                float maxY = firstCollider.ClosestPoint(transform.position).y;
+
+
+                //Physics.Raycast(transform.position, Vector3.up, out hit, 3f, groundMask);
+                //float maxY = hit.point.y;
+                targetPosition.y = maxY - 2.4f;
+                ySpeed = 0;
+            }
+        }
+        else
+        {
+            ySpeed += Physics.gravity.y * Time.deltaTime;
         }
         transform.position = targetPosition;
-        ySpeed += Physics.gravity.y * Time.deltaTime;
         if(playerDetection.IsGrounded())
         {
             Land();
@@ -94,17 +104,39 @@ public class PlayerController : MonoBehaviour
     private void MoveHorizontal()
     {
         Vector2 moveVector = joystick.GetMoveVector();
+
+        XSpeed = Mathf.Abs(moveVector.x);
+
+        ManageFacing(moveVector.x);
+
         moveVector.x *= moveSpeed;
+
         float targetX = transform.position.x  + moveVector.x * Time.deltaTime;
         Vector2 targetPosition = transform.position.With(x: targetX);
 
-        if(playerDetection.CanGoThere(targetPosition))
+        if(playerDetection.CanGoThere(targetPosition, out Collider firstCollider))
             transform.position = targetPosition;
     }
-
+    public void ManageFacing(float xSpeed)
+    {
+        float facing = XSpeed != 0 ? Mathf.Sign(xSpeed) : transform.localScale.x;
+        transform.localScale = transform.localScale.With(x : facing);
+    }
+    private void StartFalling()
+    {
+        playerState = PlayerState.Air;
+        onFallStarted?.Invoke();
+    }
+    private void Land()
+    {
+        playerState = PlayerState.Grounded;
+        ySpeed = 0;
+        onLandStarted?.Invoke();
+    }
     public void Jump()
     {
         playerState = PlayerState.Air;
         ySpeed = jumpSpeed;
+        onJumpStarted?.Invoke();
     }
 }
