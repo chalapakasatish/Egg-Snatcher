@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-
-public class PlayerController : MonoBehaviour
+using Unity.Netcode;
+public class PlayerController : NetworkBehaviour
 {
     enum PlayerState
     {
@@ -39,6 +39,8 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
+        if(!IsOwner) 
+            return;
         MoveHorizontal();
         MoveVertical();
     }
@@ -103,7 +105,7 @@ public class PlayerController : MonoBehaviour
 
     private void MoveHorizontal()
     {
-        Vector2 moveVector = joystick.GetMoveVector();
+        Vector2 moveVector = InputManager.instance.GetMovevector();
 
         XSpeed = Mathf.Abs(moveVector.x);
 
