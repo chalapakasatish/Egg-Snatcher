@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2672422901278403133}
   - component: {fileID: 5962455321163502789}
   - component: {fileID: 4054592910244928370}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: 1x1 Dirt Left
   m_TagString: Untagged
   m_Icon: {fileID: 0}

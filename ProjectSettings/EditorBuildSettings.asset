@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Egg Snatchers/Scenes/Multiplayer.unity
+    guid: 025962316f3572e4a8e72b8ea00e2502
   m_configObjects: {}
