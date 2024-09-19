@@ -2,20 +2,42 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[RequireComponent(typeof(PlayerController))]
 public class PlayerDetection : MonoBehaviour
 {
+    [Header("Components")]
+    private PlayerController playerController;
     [Header("Elements")]
     [SerializeField] private LayerMask groundMask;
+    [SerializeField] private LayerMask trampolineMask;
     [SerializeField] private BoxCollider boxCollider;
     [SerializeField] private CapsuleCollider capsuleCollider;
+    private void Start()
+    {
+        playerController = GetComponent<PlayerController>();
+    }
+    private void Update()
+    {
+        DetectTrampolines();
+    }
     /*
     public bool CanGoThere(Vector3 targetPosition)
     {
         Vector3 center = targetPosition + boxCollider.center;
-        return Physics.OverlapBox(center,boxCollider.bounds.extents/2,Quaternion.identity,groundMask).Length > 0;
+        return Physics.OverlapBox(center,boxCollider.bounds.extents/2,Quaternion.identity,groundMask).Length <= 0;
     }
     */
+    public void DetectTrampolines()
+    {
+        if(!IsGrounded())
+        {
+            return;
+        }
+        if(Physics.OverlapBox(boxCollider.transform.position, boxCollider.size / 2, Quaternion.identity, trampolineMask).Length > 0)
+        {
+            playerController.Jump();
+        }
+    }
     public bool CanGoThere(Vector3 targetPosition)
     {
         Vector3 center = targetPosition + capsuleCollider.center;

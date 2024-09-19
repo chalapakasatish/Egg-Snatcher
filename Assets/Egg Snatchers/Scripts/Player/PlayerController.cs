@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private float moveSpeed;
+    [SerializeField] private float jumpSpeed;
     [SerializeField] private float ySpeed;
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private BoxCollider groundDetector;
@@ -99,5 +100,11 @@ public class PlayerController : MonoBehaviour
 
         if(playerDetection.CanGoThere(targetPosition))
             transform.position = targetPosition;
+    }
+
+    public void Jump()
+    {
+        playerState = PlayerState.Air;
+        ySpeed = jumpSpeed;
     }
 }
