@@ -107,7 +107,7 @@ public class PlayerController : NetworkBehaviour
     {
         Vector2 moveVector = InputManager.instance.GetMovevector();
 
-        XSpeed = Mathf.Abs(moveVector.x);
+        UpdateXSpeedRpc(Mathf.Abs(moveVector.x));
 
         ManageFacing(moveVector.x);
 
@@ -140,5 +140,10 @@ public class PlayerController : NetworkBehaviour
         playerState = PlayerState.Air;
         ySpeed = jumpSpeed;
         onJumpStarted?.Invoke();
+    }
+    [Rpc(SendTo.Everyone)]
+    public void UpdateXSpeedRpc(float xSpeed)
+    {
+        XSpeed = xSpeed;
     }
 }

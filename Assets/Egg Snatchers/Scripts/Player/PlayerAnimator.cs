@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
+
 [RequireComponent(typeof(PlayerController))]
-public class PlayerAnimator : MonoBehaviour
+public class PlayerAnimator : NetworkBehaviour
 {
     [Header("Components")]
     private PlayerController playerController;
@@ -16,7 +18,7 @@ public class PlayerAnimator : MonoBehaviour
         playerController.onFallStarted += Fall;
         playerController.onLandStarted += Land;
     }
-    private void OnDestroy()
+    private new void OnDestroy()
     {
         playerController.onJumpStarted -= Jump;
         playerController.onFallStarted -= Fall;
@@ -24,10 +26,11 @@ public class PlayerAnimator : MonoBehaviour
     }
     private void Update()
     {
-        UpdateBlendTree();
+        UpdateBlendTreeRpc();
     }
 
-    private void UpdateBlendTree()
+    [Rpc(SendTo.Everyone)]
+    private void UpdateBlendTreeRpc()
     {
         animator.SetFloat("xSpeed", playerController.XSpeed);
     }
