@@ -4,32 +4,44 @@ using UnityEngine;
 using Cinemachine;
 using System;
 using Unity.Netcode;
-public class CameraManager : MonoBehaviour
+public class CameraManager : NetworkBehaviour
 {
     [Header("Elements")]
     [SerializeField] private CinemachineTargetGroup targetGroup;
     private bool configured;
     public List<PlayerController> playerControllers = new List<PlayerController>();
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        NetworkManager.OnServerStarted += ServerStartedCallback;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void ServerStartedCallback()
     {
-        if (configured)
+        if (!IsServer)
             return;
-        if(playerControllers.Count < 2)
+        NetworkManager.OnClientConnectedCallback += ClientConnectedCallback;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        if (!IsServer)
+            return;
+        NetworkManager.OnClientConnectedCallback -= ClientConnectedCallback;
+    }
+    private void ClientConnectedCallback(ulong clientId)
+    {
+        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
+        if(playerCount < 2)
         {
-            StorePlayers();
             return;
         }
-        UpdateCameraTargetGroup();
+        StorePlayersRpc();
+        UpdateCameraTargetGroupRpc();
     }
-
-    private void UpdateCameraTargetGroup()
+    [Rpc(SendTo.Everyone)]
+    private void UpdateCameraTargetGroupRpc()
     {
         configured = true;
         foreach (PlayerController playerController in playerControllers) 
@@ -42,14 +54,11 @@ public class CameraManager : MonoBehaviour
             targetGroup.AddMember(playerController.transform, weight, 2);
         }
     }
-
-    private void StorePlayers()
+    [Rpc(SendTo.Everyone)]
+    private void StorePlayersRpc()
     {
         PlayerController[] playerControllersArray = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        if (playerControllersArray.Length < 2)
-        {
-            return;
-        }
+        
         playerControllers = new List<PlayerController>(playerControllersArray);
     }
 }

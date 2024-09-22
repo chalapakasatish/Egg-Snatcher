@@ -18,7 +18,7 @@ public class PlayerAnimator : NetworkBehaviour
         playerController.onFallStarted += Fall;
         playerController.onLandStarted += Land;
     }
-    private new void OnDestroy()
+    public override void OnDestroy()
     {
         playerController.onJumpStarted -= Jump;
         playerController.onFallStarted -= Fall;
